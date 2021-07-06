@@ -12,11 +12,10 @@
 
 int main()
 {
-  unlink(SERVER_PATH);
-
   const int socket_fd{ socket(PF_LOCAL, SOCK_STREAM, 0) };
   if (socket_fd == -1) {
     std::cerr << "Socket creation error: " << std::strerror(errno) << '\n';
+    unlink(SERVER_PATH);
     exit(EXIT_FAILURE);
   }
   int option = 1;
@@ -55,7 +54,7 @@ int main()
     }
 
     ScannerResults results{};
-    const int scanner_return_code {scan_directory(msg, results)};
+    const int scanner_return_code{ scan_directory(msg, results) };
 
     /*
      * TODO: Rewrite socket writing within loop
