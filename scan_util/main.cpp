@@ -1,22 +1,16 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <cstring>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
 
+#include "../scan_service/scanner.h"
+
 #define SERVER_PATH ""
 
-struct ScannerResponse
-{
-  size_t n_searched;
-  size_t n_errors;
-  size_t n_js_detects;
-  size_t n_unix_detects;
-  size_t n_macos_detects;
-};
-
-void print_scanning_results(ScannerResponse& results);
+void print_scanning_results(ScannerResults& results);
 
 int main(int argc, char* argv[])
 {
@@ -50,7 +44,7 @@ int main(int argc, char* argv[])
    * TODO: Add reading from server
    */
 
-  ScannerResponse results{};
+  ScannerResults results{};
 
   print_scanning_results(results);
 
@@ -59,7 +53,16 @@ int main(int argc, char* argv[])
   return EXIT_SUCCESS;
 }
 
-void print_scanning_results(ScannerResponse& results)
+void print_scanning_results(ScannerResults& results)
 {
-
+  std::cout << "====== Scan result ===========\n" <<
+            "Processed files: " << results.n_searched << '\n' <<
+            "JS detects: " << results.n_js_detects << '\n' <<
+            "Unix detects: " << results.n_unix_detects << '\n' <<
+            "macOS detects: " << results.n_macos_detects << '\n' <<
+            "Errors: " << results.n_errors << '\n' <<
+            "Execution time: " << std::fixed << std::setprecision(2) << results.duration_s << "s:" <<
+            std::fixed << std::setprecision(2) << results.duration_ms << "ms:" <<
+            std::fixed << std::setprecision(2) << results.duration_us << "us" << '\n' <<
+            "==============================\n";
 }
