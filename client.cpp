@@ -27,6 +27,10 @@ int main(int argc, char* argv[])
 
   const char* message = argv[1];
   const int socket_fd  {socket(PF_LOCAL, SOCK_STREAM, 0)};
+  if (socket_fd == -1) {
+    std::cerr << "Socket creation error" << std::strerror(errno) << '\n';
+    exit(EXIT_FAILURE);
+  }
   const sockaddr_un name {PF_LOCAL, SERVER_PATH};
 
   if ((connect(socket_fd, reinterpret_cast<const sockaddr*>(&name), SUN_LEN(&name))) == -1) {
