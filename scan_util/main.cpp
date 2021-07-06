@@ -10,7 +10,7 @@
 
 #define SERVER_PATH "/tmp/scan_service"
 
-void print_scanning_results(ScannerResults& results);
+void print_scanning_results(const size_t results[]);
 
 int main(int argc, char* argv[])
 {
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
   fd_write(socket_fd, &message_length, sizeof(message_length));
   fd_write(socket_fd, message, message_length);
 
-  ScannerResults results{};
+  size_t results[ScannerResultsTypes::ResultsTypesNum];
   int scanner_return_code;
 
   if (!fd_read(socket_fd, &scanner_return_code, sizeof(scanner_return_code))) {
@@ -65,16 +65,16 @@ int main(int argc, char* argv[])
   return EXIT_SUCCESS;
 }
 
-void print_scanning_results(ScannerResults& results)
+void print_scanning_results(const size_t results[])
 {
   std::cout << "====== Scan result ===========\n" <<
-            "Processed files: " << results.n_searched << '\n' <<
-            "JS detects: " << results.n_js_detects << '\n' <<
-            "Unix detects: " << results.n_unix_detects << '\n' <<
-            "macOS detects: " << results.n_macos_detects << '\n' <<
-            "Errors: " << results.n_errors << '\n' <<
-            "Execution time: " << std::fixed << std::setprecision(2) << results.duration_s << "s:" <<
-            std::fixed << std::setprecision(2) << results.duration_ms << "ms:" <<
-            std::fixed << std::setprecision(2) << results.duration_us << "us" << '\n' <<
+            "Processed files: " << results[ScannerResultsTypes::Searched] << '\n' <<
+            "JS detects: " << results[ScannerResultsTypes::JsDetects] << '\n' <<
+            "Unix detects: " << results[ScannerResultsTypes::UnixDetects] << '\n' <<
+            "macOS detects: " << results[ScannerResultsTypes::MacosDetects] << '\n' <<
+            "Errors: " << results[ScannerResultsTypes::Errors] << '\n' <<
+            "Execution time: " << std::fixed << std::setprecision(2) << results[ScannerResultsTypes::DurationS] << "s:" <<
+            std::fixed << std::setprecision(2) << results[ScannerResultsTypes::DurationMs] << "ms:" <<
+            std::fixed << std::setprecision(2) << results[ScannerResultsTypes::DurationUs] << "us" << '\n' <<
             "==============================\n";
 }

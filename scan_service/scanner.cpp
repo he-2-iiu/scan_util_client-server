@@ -21,7 +21,7 @@ static std::atomic<size_t> n_macos_detects{};
 
 static void inspect_file_task(const std::filesystem::directory_entry& entry);
 
-int scan_directory(const char* directory_path, ScannerResults& results)
+int scan_directory(const char* directory_path, size_t results[])
 {
   std::filesystem::path dir_path{ directory_path };
   if (!std::filesystem::exists(dir_path)) {
@@ -60,14 +60,19 @@ int scan_directory(const char* directory_path, ScannerResults& results)
 
   auto duration{ std::chrono::high_resolution_clock::now() - start };
 
-  results.n_searched = n_searched;
-  results.n_errors = n_errors;
-  results.n_js_detects = n_js_detects;
-  results.n_unix_detects = n_unix_detects;
-  results.n_macos_detects = n_macos_detects;
-  results.duration_s = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-  results.duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000;
-  results.duration_us = std::chrono::duration_cast<std::chrono::microseconds>(duration).count() % 1000;
+  results[ScannerResultsTypes::Searched] = n_searched;
+  results[ScannerResultsTypes::Errors] = n_errors;
+  results[ScannerResultsTypes::JsDetects] = n_js_detects;
+  results[ScannerResultsTypes::UnixDetects] = n_unix_detects;
+  results[ScannerResultsTypes::MacosDetects] = n_macos_detects;
+  results[ScannerResultsTypes::DurationS] = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+  results[ScannerResultsTypes::DurationMs] = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000;
+  results[ScannerResultsTypes::DurationUs] = std::chrono::duration_cast<std::chrono::microseconds>(duration).count() % 1000;
+
+  n_errors = 0;
+  n_js_detects = 0;
+  n_unix_detects = 0;
+  n_macos_detects = 0;
 
   return SCANNER_SUCCESS;
 }
