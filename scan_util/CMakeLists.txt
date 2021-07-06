@@ -1,1 +1,1 @@
-add_executable(scan_util client.cpp)
+add_executable(scan_util main.cpp)
