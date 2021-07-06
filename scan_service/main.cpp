@@ -5,11 +5,15 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#define SERVER_PATH ""
-#define EXIT_MESSAGE ""
+#include "scanner.h"
+
+#define SERVER_PATH "/tmp/scan_service"
+#define EXIT_MESSAGE "CLOSE_SERVER"
 
 int main()
 {
+  unlink(SERVER_PATH);
+
   const int socket_fd{ socket(PF_LOCAL, SOCK_STREAM, 0) };
   if (socket_fd == -1) {
     std::cerr << "Socket creation error: " << std::strerror(errno) << '\n';
@@ -50,9 +54,16 @@ int main()
       break;
     }
 
+    ScannerResults results{};
+    const int scanner_return_code {scan_directory(msg, results)};
+
     /*
-     * TODO: Add scanning and writing to client
+     * TODO: Rewrite socket writing within loop
      */
+    write(client_socket_fd, &scanner_return_code, sizeof(scanner_return_code));
+    if (scanner_return_code == SCANNER_SUCCESS) {
+      write(client_socket_fd, &results, sizeof(results));
+    }
 
     delete[] msg;
     close(client_socket_fd);

@@ -1,1 +1,1 @@
-add_executable(scan_service main.cpp)
+add_executable(scan_service main.cpp scanner.cpp)
