@@ -8,7 +8,7 @@
 
 #include "../scan_service/scanner.h"
 
-#define SERVER_PATH ""
+#define SERVER_PATH "/tmp/scan_service"
 
 void print_scanning_results(ScannerResults& results);
 
@@ -40,13 +40,27 @@ int main(int argc, char* argv[])
   write(socket_fd, &message_length, sizeof(message_length));
   write(socket_fd, message, message_length);
 
-  /*
-   * TODO: Add reading from server
-   */
-
   ScannerResults results{};
+  int scanner_return_code;
 
-  print_scanning_results(results);
+  if (!read(socket_fd, &scanner_return_code, sizeof(scanner_return_code))) {
+    std::cout << "Server closed connection\n";
+    close(socket_fd);
+    return EXIT_SUCCESS;
+  }
+
+  if (scanner_return_code == SCANNER_SUCCESS) {
+    read(socket_fd, &results, sizeof(results));
+    print_scanning_results(results);
+  }
+
+  if (scanner_return_code == SCANNER_ERROR_NO_DIR) {
+    std::cerr << message << " does not exist\n";
+  }
+
+  if (scanner_return_code == SCANNER_ERROR_NO_PERMISSIONS) {
+    std::cerr << "Not enough permissions to open " << message << '\n';
+  }
 
   close(socket_fd);
 
