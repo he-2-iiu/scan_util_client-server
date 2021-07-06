@@ -1,1 +1,1 @@
-add_executable(scan_service main.cpp scanner.cpp)
+add_executable(scan_service main.cpp scanner.cpp socket_io.cpp)

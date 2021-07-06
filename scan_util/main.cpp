@@ -1,12 +1,12 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <cstring>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
 
 #include "../scan_service/scanner.h"
+#include "../scan_service/socket_io.h"
 
 #define SERVER_PATH "/tmp/scan_service"
 
@@ -22,35 +22,33 @@ int main(int argc, char* argv[])
   const char* message = argv[1];
   const int socket_fd{ socket(PF_LOCAL, SOCK_STREAM, 0) };
   if (socket_fd == -1) {
-    std::cerr << "Socket creation error" << std::strerror(errno) << '\n';
+    std::cerr << "Socket creation error" << strerror(errno) << '\n';
     exit(EXIT_FAILURE);
   }
   const sockaddr_un name{ PF_LOCAL, SERVER_PATH };
 
   if ((connect(socket_fd, reinterpret_cast<const sockaddr*>(&name), SUN_LEN(&name))) == -1) {
-    std::cerr << "Connect: " << std::strerror(errno) << '\n';
+    std::cerr << "Connect: " << strerror(errno) << '\n';
     close(socket_fd);
     exit(EXIT_FAILURE);
   }
 
   const size_t message_length = strlen(message) + 1;
-  /*
-   * TODO: Write in a loop to prevent errors
-   */
-  write(socket_fd, &message_length, sizeof(message_length));
-  write(socket_fd, message, message_length);
+
+  fd_write(socket_fd, &message_length, sizeof(message_length));
+  fd_write(socket_fd, message, message_length);
 
   ScannerResults results{};
   int scanner_return_code;
 
-  if (!read(socket_fd, &scanner_return_code, sizeof(scanner_return_code))) {
+  if (!fd_read(socket_fd, &scanner_return_code, sizeof(scanner_return_code))) {
     std::cout << "Server closed connection\n";
     close(socket_fd);
     return EXIT_SUCCESS;
   }
 
   if (scanner_return_code == SCANNER_SUCCESS) {
-    read(socket_fd, &results, sizeof(results));
+    fd_read(socket_fd, &results, sizeof(results));
     print_scanning_results(results);
   }
 

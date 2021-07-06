@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "scanner.h"
+#include "socket_io.h"
 
 #define SERVER_PATH "/tmp/scan_service"
 #define EXIT_MESSAGE "CLOSE_SERVER"
@@ -39,13 +40,13 @@ int main()
   int client_socket_fd;
   for (;;) {
     client_socket_fd = accept(socket_fd, nullptr, nullptr);
-    if (read(client_socket_fd, &msg_len, sizeof(msg_len)) == 0) {
+    if (fd_read(client_socket_fd, &msg_len, sizeof(msg_len)) == 0) {
       close(client_socket_fd);
       break;
     }
 
     msg = new char[msg_len];
-    read(client_socket_fd, msg, msg_len);
+    fd_read(client_socket_fd, msg, msg_len);
 
     if (!strcmp(msg, EXIT_MESSAGE)) {
       close(client_socket_fd);
@@ -56,12 +57,9 @@ int main()
     ScannerResults results{};
     const int scanner_return_code{ scan_directory(msg, results) };
 
-    /*
-     * TODO: Rewrite socket writing within loop
-     */
-    write(client_socket_fd, &scanner_return_code, sizeof(scanner_return_code));
+    fd_write(client_socket_fd, &scanner_return_code, sizeof(scanner_return_code));
     if (scanner_return_code == SCANNER_SUCCESS) {
-      write(client_socket_fd, &results, sizeof(results));
+      fd_write(client_socket_fd, &results, sizeof(results));
     }
 
     delete[] msg;
