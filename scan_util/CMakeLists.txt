@@ -1,0 +1,1 @@
+add_executable(scan_util client.cpp)
